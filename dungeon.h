@@ -89,7 +89,7 @@ class Dungeon {
 
   void place_room(int x, int y, int room);
   void place_room_value(int x, int y, int value);
-  bool try_place_door(int x, int y, int cx, int cy);
+  bool try_place_door(int x, int y, int cx, int cy, Tile door_tile);
   std::vector<int> divide(int target, size_t max_count);
   int random_in_range(int min, int max);
   void clear_active_cells(int room);

@@ -40,26 +40,27 @@ bool Dungeon::generate(unsigned int seed) {
   std::uniform_int_distribution<int> rand_dir(0, 3);
 
   for (int i = 0; i < 15; ++i) {
+    const Tile door_tile = room > 0 ? Tile::DoorLocked : Tile::DoorOpen;
     int tries = 10;
     while (tries > 0) {
       const int dir = rand_dir(rng_);
       if (dir == 0) {
-        if (try_place_door(rx + 6, ry, rx + 6, ry - 1)) {
+        if (try_place_door(rx + 6, ry, rx + 6, ry - 1, door_tile)) {
           ry -= 8;
           break;
         }
       } else if (dir == 1) {
-        if (try_place_door(rx + 6, ry + 8, rx + 6, ry + 1)) {
+        if (try_place_door(rx + 6, ry + 8, rx + 6, ry + 1, door_tile)) {
           ry += 8;
           break;
         }
       } else if (dir == 2) {
-        if (try_place_door(rx + 12, ry + 4, rx + 13, ry + 4)) {
+        if (try_place_door(rx + 12, ry + 4, rx + 13, ry + 4, door_tile)) {
           rx += 12;
           break;
         }
       } else if (dir == 3) {
-        if (try_place_door(rx, ry + 4, rx - 1, ry + 4)) {
+        if (try_place_door(rx, ry + 4, rx - 1, ry + 4, door_tile)) {
           rx -= 12;
           break;
         }
@@ -157,6 +158,9 @@ void Dungeon::place_room(int x, int y, int room) {
     }
   }
 
+  // don't place values in rooms without numbers
+  if (room == 0) return;
+
   DEBUG_LOG << "Configuring room" << std::endl;
   float t = (room - 1) / 14.f;
   const int min_target = lerp(10, 100, t);
@@ -228,9 +232,9 @@ std::vector<int> Dungeon::divide(int value, size_t max_count) {
   return results;
 }
 
-bool Dungeon::try_place_door(int x, int y, int cx, int cy) {
+bool Dungeon::try_place_door(int x, int y, int cx, int cy, Tile door_tile) {
   if (get_tile(cx, cy) == Tile::Wall) {
-    set_tile(x, y, Tile::DoorLocked);
+    set_tile(x, y, door_tile);
     return true;
   }
   return false;
