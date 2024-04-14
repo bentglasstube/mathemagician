@@ -2,8 +2,8 @@
 
 Type=Application
 Version=1.0
-Name=summoner
+Name=mathemagician
 Terminal=false
 Icon=icon
-Exec=summoner
+Exec=mathemagician
 Categories=Game;

@@ -1,7 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_binary(
-    name = "summoner",
+    name = "mathemagician",
     data = ["//content"],
     linkopts = [
         "-lSDL2",

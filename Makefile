@@ -3,7 +3,7 @@ ifeq ($(UNAME), Windows)
 	CROSS=x86_64-w64-mingw32.static-
 endif
 
-NAME=summoner
+NAME=mathemagician
 GAMDEPS=audio controllerdb game graphics input rect screen spritemap text util
 
 SOURCES=$(wildcard *.cc) $(patsubst %,gam/%.cc,$(GAMDEPS))

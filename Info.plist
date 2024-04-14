@@ -5,11 +5,11 @@
     <key>CFBundleExecutable</key>
     <string>launcher</string>
     <key>CFBundleIdentifier</key>
-    <string>org.eatabrick.summoner</string>
+    <string>org.eatabrick.mathemagician</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>summoner</string>
+    <string>mathemagician</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
   </dict>
