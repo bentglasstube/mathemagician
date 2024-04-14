@@ -1,5 +1,6 @@
 #pragma once
 
+#include "backdrop.h"
 #include "screen.h"
 #include "text.h"
 
@@ -13,5 +14,6 @@ class TitleScreen : public Screen {
   Screen* next_screen() const override;
 
  private:
+  Backdrop backdrop_;
   Text text_;
 };
