@@ -1,6 +1,7 @@
 #include "dungeon.h"
 
 #include <algorithm>
+#include <fstream>
 #include <map>
 #include <stack>
 #include <unordered_set>
@@ -17,6 +18,7 @@ Dungeon::Dungeon(int width, int height, unsigned int seed)
       ui_("ui.png", 10, Config::kHalfTile, Config::kHalfTile),
       doors_("doors.png", 8, Config::kTileSize, Config::kTileSize),
       wall_overlay_("room-overlay.png", 0, 0, 256, 176) {
+  load_room_data("content/rooms.txt");
   while (!generate(seed)) {
     ++seed;
   }
@@ -36,7 +38,7 @@ bool Dungeon::generate(unsigned int seed) {
   int ry = height_ - 9;
   int room = 0;
 
-  place_room(rx, ry, room);
+  place_room(rx, ry, room, RoomType::Entrance);
   set_tile(rx + 6, ry + 8, Tile::DoorOpen);
 
   std::uniform_int_distribution<int> rand_dir(0, 3);
@@ -72,11 +74,30 @@ bool Dungeon::generate(unsigned int seed) {
         return false;
       }
     }
-    place_room(rx, ry, ++room);
+    place_room(rx, ry, ++room, RoomType::Normal);
   }
 
   DEBUG_LOG << "Done placing rooms." << std::endl;
   return true;
+}
+
+void Dungeon::apply_template(int x, int y, int n) {
+  DEBUG_LOG << "Applying template " << n << std::endl;
+  for (int ty = 0; ty < 7; ++ty) {
+    for (int tx = 0; tx < 11; ++tx) {
+      set_tile(x + tx + 1, y + ty + 1, room_templates_[n][ty * 11 + tx]);
+    }
+  }
+}
+
+void Dungeon::tile_room(int x, int y, RoomType type) {
+  if (type == RoomType::Entrance) {
+    apply_template(x, y, 0);
+  } else if (type == RoomType::Normal) {
+    std::uniform_int_distribution<int> rand_template(
+        1, room_templates_.size() - 1);
+    apply_template(x, y, rand_template(rng_));
+  }
 }
 
 Dungeon::Position Dungeon::grid_coords(double px, double py) const {
@@ -240,7 +261,7 @@ int lerp(int a, int b, float t) {
 }
 }  // namespace
 
-void Dungeon::place_room(int x, int y, int room) {
+void Dungeon::place_room(int x, int y, int room, RoomType type) {
   DEBUG_LOG << "Placing room at " << x << ", " << y << std::endl;
   for (int ty = 0; ty < 7; ++ty) {
     for (int tx = 0; tx < 11; ++tx) {
@@ -249,9 +270,8 @@ void Dungeon::place_room(int x, int y, int room) {
       cell.room = room;
     }
   }
-
-  // don't place values in rooms without numbers
-  if (room == 0) return;
+  tile_room(x, y, type);
+  if (type != RoomType::Normal) return;
 
   DEBUG_LOG << "Configuring room" << std::endl;
   float t = (room - 1) / 14.f;
@@ -411,6 +431,42 @@ Dungeon::Room& Dungeon::get_room(int x, int y) {
 
 const Dungeon::Room& Dungeon::get_room(int x, int y) const {
   return rooms_[get_cell(x, y).room];
+}
+
+namespace {
+Dungeon::Tile tile_for_char(char c) {
+  switch (c) {
+    case 'x':
+      return Dungeon::Tile::Block;
+    case 'o':
+      return Dungeon::Tile::Pit;
+    case 's':
+      return Dungeon::Tile::Sand;
+    case 'l':
+      return Dungeon::Tile::StatueLeft;
+    case 'r':
+      return Dungeon::Tile::StatueRight;
+    default:
+      return Dungeon::Tile::Room;
+  }
+}
+}  // namespace
+
+void Dungeon::load_room_data(const std::string& filename) {
+  std::array<Tile, 77> template_tiles;
+  int index = 0;
+  std::ifstream reader(filename);
+  std::string row;
+  while (std::getline(reader, row)) {
+    for (char c : row) {
+      if (c == '\n') continue;
+      template_tiles[index++] = tile_for_char(c);
+    }
+    if (index == 77) {
+      room_templates_.push_back(template_tiles);
+      index = 0;
+    }
+  }
 }
 
 constexpr Dungeon::Cell Dungeon::kBadCell;

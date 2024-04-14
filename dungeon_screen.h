@@ -34,6 +34,4 @@ class DungeonScreen : public Screen {
   State state_;
   HUD hud_;
   int timer_;
-
-  void move_player_to_tile(Dungeon::Tile tile);
 };

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <functional>
 #include <memory>
 #include <random>
@@ -78,6 +79,7 @@ class Dungeon {
   static constexpr Cell kBadCell = {Tile::OutOfBounds, 0, 0, false};
 
   enum class Direction { North, South, East, West };
+  enum class RoomType { Entrance, Normal, Boss, Pedestal };
 
   int width_, height_;
   std::default_random_engine rng_;
@@ -88,12 +90,15 @@ class Dungeon {
   SpriteMap tiles_, ui_, doors_;
   Sprite wall_overlay_;
 
+  std::vector<std::array<Tile, 77>> room_templates_;
+
   bool generate(unsigned int seed);
 
   void set_tile(int x, int y, Tile tile);
   Tile get_tile(int x, int y);
 
-  void place_room(int x, int y, int room);
+  void place_room(int x, int y, int room, RoomType type);
+  void tile_room(int x, int y, RoomType type);
   void place_room_value(int x, int y, int value);
   bool try_place_door(int x, int y, int cx, int cy, Tile door_tile);
   std::vector<int> divide(int target, size_t max_count);
@@ -101,4 +106,6 @@ class Dungeon {
   void clear_active_cells(int room);
   void unlock_doors(int room);
   void draw_door_frame(Graphics& graphics, Tile tile, int x, int y) const;
+  void load_room_data(const std::string& file);
+  void apply_template(int x, int y, int n);
 };
