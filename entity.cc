@@ -39,7 +39,7 @@ Entity::Entity(std::string sprites, int cols, double x, double y, int hp)
     : sprites_(sprites, cols, Config::kTileSize, Config::kTileSize),
       x_(x),
       y_(y),
-      facing_(Direction::South),
+      facing_(Direction::North),
       knockback_(facing_),
       state_(State::Waiting),
       timer_(0),

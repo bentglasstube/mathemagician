@@ -11,7 +11,7 @@ DungeonScreen::DungeonScreen()
       state_(State::FadeIn),
       hud_(),
       timer_(0) {
-  player_.set_position(512 * 16, 1022 * 16);
+  player_.set_position(512 * 16 - 8, 1023 * 16);
 }
 
 bool DungeonScreen::update(const Input& input, Audio&, unsigned int elapsed) {
