@@ -32,14 +32,14 @@ bool Dungeon::generate(unsigned int seed) {
 
   int rx = width_ / 2 - 7;
   int ry = height_ - 9;
-  int room = 1;
+  int room = 0;
 
   place_room(rx, ry, room);
   set_tile(rx + 6, ry + 8, Tile::DoorOpen);
 
   std::uniform_int_distribution<int> rand_dir(0, 3);
 
-  for (int i = 0; i < 14; ++i) {
+  for (int i = 0; i < 15; ++i) {
     int tries = 10;
     while (tries > 0) {
       const int dir = rand_dir(rng_);
@@ -116,6 +116,7 @@ bool Dungeon::walkable(int x, int y) const {
   switch (get_cell(x, y).tile) {
     case Dungeon::Tile::Room:
     case Dungeon::Tile::DoorOpen:
+    case Dungeon::Tile::Sand:
       return true;
     default:
       return false;
@@ -168,10 +169,6 @@ void Dungeon::place_room(int x, int y, int room) {
   const int rows = 3 + (room - 1) / 6;
   const int cols = 3 + (room + 2) / 6;
   int tiles_to_value = rows * cols;
-  if (room > 3) tiles_to_value += 3;
-  if (room > 6) tiles_to_value += 4;
-  if (room > 9) tiles_to_value += 4;
-  if (room > 12) tiles_to_value += 5;
 
   const int max_group_size = std::min(rows + 1, cols + 1);
 

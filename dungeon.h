@@ -16,9 +16,14 @@ class Dungeon {
     OutOfBounds,
     Wall,
     Room,
+    Block,
     DoorLocked,
     DoorClosed,
     DoorOpen,
+    Pit,
+    Sand,
+    StatueLeft,
+    StatueRight,
   };
 
   enum class Result { None, Overload, Perfect };
