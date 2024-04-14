@@ -1,6 +1,7 @@
 #include "dungeon.h"
 
 #include <algorithm>
+#include <cassert>
 #include <fstream>
 #include <map>
 #include <stack>
@@ -77,8 +78,7 @@ bool Dungeon::generate(unsigned int seed) {
     place_room(rx, ry, ++room, RoomType::Normal);
   }
 
-  DEBUG_LOG << "Done placing rooms."
-            << "\n";
+  DEBUG_LOG << "Done placing rooms.\n";
   return true;
 }
 
@@ -273,8 +273,8 @@ void Dungeon::place_room(int x, int y, int room, RoomType type) {
   tile_room(x, y, type);
   if (type != RoomType::Normal) return;
 
-  DEBUG_LOG << "Configuring room"
-            << "\n";
+  DEBUG_LOG << "Configuring room\n";
+
   float t = (room - 1) / 14.f;
   const int min_target = lerp(10, 100, t);
   const int max_target = lerp(25, 300, t);
@@ -289,8 +289,9 @@ void Dungeon::place_room(int x, int y, int room, RoomType type) {
 
   const int max_group_size = std::min(rows + 1, cols + 1);
 
-  while (tiles_to_value > 1) {
+  while (tiles_to_value > 2) {
     auto values = divide(target, std::min(tiles_to_value - 1, max_group_size));
+    assert(values.size() > 1);
     DEBUG_LOG << "  Set ";
     for (auto value : values) {
       DEBUG_LOG << value << ", ";
@@ -301,13 +302,15 @@ void Dungeon::place_room(int x, int y, int room, RoomType type) {
   }
   while (tiles_to_value > 0) {
     int value = random_in_range(target / 4, 3 * target / 4);
-    place_room_value(x, y, value);
+    place_room_value(x, y, std::min(value, 99));
     DEBUG_LOG << "  Extra " << value << "\n";
     --tiles_to_value;
   }
 }
 
 void Dungeon::place_room_value(int x, int y, int value) {
+  assert(value < 100);
+
   std::uniform_int_distribution<int> rx(x + 2, x + 10);
   std::uniform_int_distribution<int> ry(y + 2, y + 6);
 
@@ -328,15 +331,24 @@ int Dungeon::random_in_range(int min, int max) {
 }
 
 std::vector<int> Dungeon::divide(int value, size_t max_count) {
+  assert(value / max_count < 99);
   std::vector<int> results;
-  while (value > 2) {
+  DEBUG_LOG << "Dividing " << value << " into " << max_count << " parts\n";
+  while (value > 5) {
     const int part = random_in_range(2, std::min(value - 1, 99));
     value -= part;
     results.push_back(part);
     if (results.size() == max_count) {
-      const int i = random_in_range(0, max_count - 1);
-      results[i] += value;
-      value = 0;
+      DEBUG_LOG << "Hit max size, adding remainder.\n";
+      for (size_t i = 0; i < results.size(); ++i) {
+        if (results[i] + value > 99) {
+          value -= 99 - results[i];
+          results[i] = 99;
+        } else {
+          results[i] += value;
+          value = 0;
+        }
+      }
     }
   }
   if (value > 0) {
