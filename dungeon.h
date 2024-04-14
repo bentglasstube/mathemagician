@@ -8,6 +8,7 @@
 #include "config.h"
 #include "graphics.h"
 #include "rect.h"
+#include "sprite.h"
 #include "spritemap.h"
 
 class Dungeon {
@@ -33,6 +34,8 @@ class Dungeon {
     int room;
     int value;
     bool active;
+
+    bool is_door() const;
   };
 
   struct Position {
@@ -59,6 +62,7 @@ class Dungeon {
   Position find_tile(Tile tile) const;
 
   void draw(Graphics& graphics, int hud_height, int xo, int yo) const;
+  void draw_overlay(Graphics& graphics, int hud_height, int xo, int yo) const;
 
   bool walkable(int x, int y) const;
   bool box_walkable(const Rect& r) const;
@@ -79,8 +83,10 @@ class Dungeon {
   std::default_random_engine rng_;
   Cell cells_[1024][1024];
   Room rooms_[16];
+  mutable Tile door_tiles_[4];
 
-  SpriteMap tiles_, ui_;
+  SpriteMap tiles_, ui_, doors_;
+  Sprite wall_overlay_;
 
   bool generate(unsigned int seed);
 
@@ -94,4 +100,5 @@ class Dungeon {
   int random_in_range(int min, int max);
   void clear_active_cells(int room);
   void unlock_doors(int room);
+  void draw_door_frame(Graphics& graphics, Tile tile, int x, int y) const;
 };

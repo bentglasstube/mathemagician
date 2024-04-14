@@ -67,6 +67,7 @@ void DungeonScreen::draw(Graphics& graphics) const {
 
   dungeon_.draw(graphics, kHudHeight, xo, yo);
   player_.draw(graphics, xo, yo);
+  dungeon_.draw_overlay(graphics, kHudHeight, xo, yo);
 
   if (state_ == State::FadeIn || state_ == State::FadeOut) {
     const double pct = timer_ / (double)kFadeTimer;
@@ -80,6 +81,9 @@ void DungeonScreen::draw(Graphics& graphics) const {
 
   graphics.draw_rect({0, 0}, {graphics.width(), kHudHeight}, 0x000000ff, true);
   hud_.draw(graphics, player_, dungeon_);
+
+  text_.draw(graphics, std::to_string(camera_.xoffset()), 0, 0);
+  text_.draw(graphics, std::to_string(camera_.yoffset()), 0, 16);
 }
 
 Screen* DungeonScreen::next_screen() const { return new TitleScreen(); }

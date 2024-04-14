@@ -14,7 +14,9 @@ Dungeon::Dungeon(int width, int height, unsigned int seed)
       height_(height),
       rng_(seed),
       tiles_("tiles.png", 4, Config::kTileSize, Config::kTileSize),
-      ui_("ui.png", 10, Config::kHalfTile, Config::kHalfTile) {
+      ui_("ui.png", 10, Config::kHalfTile, Config::kHalfTile),
+      doors_("doors.png", 8, Config::kTileSize, Config::kTileSize),
+      wall_overlay_("room-overlay.png", 0, 0, 256, 176) {
   while (!generate(seed)) {
     ++seed;
   }
@@ -91,7 +93,23 @@ Dungeon::Position Dungeon::find_tile(Tile tile) const {
   return {-1, -1};
 }
 
+bool Dungeon::Cell::is_door() const {
+  switch (tile) {
+    case Tile::DoorOpen:
+    case Tile::DoorLocked:
+    case Tile::DoorClosed:
+      return true;
+    default:
+      return false;
+  }
+}
+
 void Dungeon::draw(Graphics& graphics, int hud_height, int xo, int yo) const {
+  door_tiles_[0] = Tile::Wall;
+  door_tiles_[1] = Tile::Wall;
+  door_tiles_[2] = Tile::Wall;
+  door_tiles_[3] = Tile::Wall;
+
   for (int y = 0; y < height_; ++y) {
     const int gy = Config::kTileSize * y - yo;
     if (gy < hud_height - Config::kTileSize) continue;
@@ -101,16 +119,90 @@ void Dungeon::draw(Graphics& graphics, int hud_height, int xo, int yo) const {
       const int gx = Config::kTileSize * x - xo;
       if (gx < -Config::kTileSize) continue;
       if (gx > graphics.width()) break;
+
       auto cell = cells_[y][x];
-      tiles_.draw(graphics, static_cast<int>(cell.tile), gx, gy);
-      if (cell.value > 0) {
-        const int vx = cell.value > 9 ? gx : gx + Config::kQuarterTile;
-        const int vy = gy + Config::kQuarterTile;
-        const UI::Color vc = cell.active ? UI::Color::Cyan : UI::Color::Black;
-        UI::draw_small_number(graphics, ui_, vx, vy, cell.value, vc);
+      if (cell.is_door()) {
+        if (gy == 96) {
+          doors_.draw(graphics, 32, gx, gy);
+          door_tiles_[0] = cell.tile;
+        } else if (gy == 224) {
+          doors_.draw(graphics, 40, gx, gy);
+          door_tiles_[1] = cell.tile;
+        } else if (gx == 24) {
+          doors_.draw(graphics, 48, gx, gy);
+          door_tiles_[2] = cell.tile;
+        } else if (gx == 216) {
+          doors_.draw(graphics, 56, gx, gy);
+          door_tiles_[3] = cell.tile;
+        }
+      } else if (cell.tile == Tile::Wall) {
+        if (gy == 96) doors_.draw(graphics, 27, gx, gy);
+        if (gy == 224) doors_.draw(graphics, 28, gx, gy);
+        if (gx == 24) doors_.draw(graphics, 29, gx, gy);
+        if (gx == 216) doors_.draw(graphics, 30, gx, gy);
+      } else {
+        tiles_.draw(graphics, static_cast<int>(cell.tile), gx, gy);
+        if (cell.value > 0) {
+          const int vx = cell.value > 9 ? gx : gx + Config::kQuarterTile;
+          const int vy = gy + Config::kQuarterTile;
+          const UI::Color vc = cell.active ? UI::Color::Cyan : UI::Color::Black;
+          UI::draw_small_number(graphics, ui_, vx, vy, cell.value, vc);
+        }
       }
     }
   }
+}
+
+#define DRAW_DOOR_TILE(n, ox, oy)                          \
+  doors_.draw(graphics, (n), x + (ox) * Config::kTileSize, \
+              y + (oy) * Config::kTileSize)
+
+void Dungeon::draw_door_frame(Graphics& graphics, Tile tile, int x,
+                              int y) const {
+  if (tile == Tile::Wall) return;
+
+  if (y == 96) {  // north door
+    DRAW_DOOR_TILE(0, -1, -1);
+    DRAW_DOOR_TILE(1, 0, -1);
+    DRAW_DOOR_TILE(2, 1, -1);
+    DRAW_DOOR_TILE(8, -1, 0);
+    if (tile == Tile::DoorLocked) DRAW_DOOR_TILE(33, 0, 0);
+    if (tile == Tile::DoorClosed) DRAW_DOOR_TILE(36, 0, 0);
+    DRAW_DOOR_TILE(10, 1, 0);
+  } else if (y == 224) {  // south door
+    DRAW_DOOR_TILE(16, -1, 0);
+    if (tile == Tile::DoorLocked) DRAW_DOOR_TILE(41, 0, 0);
+    if (tile == Tile::DoorClosed) DRAW_DOOR_TILE(44, 0, 0);
+    DRAW_DOOR_TILE(18, 1, 0);
+    DRAW_DOOR_TILE(24, -1, 1);
+    DRAW_DOOR_TILE(25, 0, 1);
+    DRAW_DOOR_TILE(26, 1, 1);
+  } else if (x == 24) {  // west door
+    DRAW_DOOR_TILE(3, -1, -1);
+    DRAW_DOOR_TILE(4, 0, -1);
+    DRAW_DOOR_TILE(11, -1, 0);
+    if (tile == Tile::DoorLocked) DRAW_DOOR_TILE(49, 0, 0);
+    if (tile == Tile::DoorClosed) DRAW_DOOR_TILE(52, 0, 0);
+    DRAW_DOOR_TILE(19, -1, 1);
+    DRAW_DOOR_TILE(20, 0, 1);
+  } else if (x == 216) {  // east door
+    DRAW_DOOR_TILE(5, 0, -1);
+    DRAW_DOOR_TILE(6, 1, -1);
+    if (tile == Tile::DoorLocked) DRAW_DOOR_TILE(57, 0, 0);
+    if (tile == Tile::DoorClosed) DRAW_DOOR_TILE(60, 0, 0);
+    DRAW_DOOR_TILE(14, 1, 0);
+    DRAW_DOOR_TILE(21, 0, 1);
+    DRAW_DOOR_TILE(22, 1, 1);
+  }
+}
+
+void Dungeon::draw_overlay(Graphics& graphics, int hud_height, int xo,
+                           int yo) const {
+  wall_overlay_.draw(graphics, 0, hud_height);
+  draw_door_frame(graphics, door_tiles_[0], 120, 96);
+  draw_door_frame(graphics, door_tiles_[1], 120, 224);
+  draw_door_frame(graphics, door_tiles_[2], 24, 160);
+  draw_door_frame(graphics, door_tiles_[3], 216, 160);
 }
 
 bool Dungeon::walkable(int x, int y) const {

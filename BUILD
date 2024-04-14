@@ -57,6 +57,7 @@ cc_library(
     srcs = ["dungeon.cc"],
     hdrs = ["dungeon.h"],
     deps = [
+        "@libgam//:sprite",
         "@libgam//:graphics",
         "@libgam//:rect",
         "@libgam//:spritemap",
