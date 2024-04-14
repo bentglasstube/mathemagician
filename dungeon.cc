@@ -25,7 +25,7 @@ Dungeon::Dungeon(int width, int height, unsigned int seed)
 }
 
 bool Dungeon::generate(unsigned int seed) {
-  DEBUG_LOG << "Generating dungeon with seed " << seed << std::endl;
+  DEBUG_LOG << "Generating dungeon with seed " << seed << "\n";
   rng_.seed(seed);
 
   for (int y = 0; y < height_; ++y) {
@@ -77,12 +77,13 @@ bool Dungeon::generate(unsigned int seed) {
     place_room(rx, ry, ++room, RoomType::Normal);
   }
 
-  DEBUG_LOG << "Done placing rooms." << std::endl;
+  DEBUG_LOG << "Done placing rooms."
+            << "\n";
   return true;
 }
 
 void Dungeon::apply_template(int x, int y, int n) {
-  DEBUG_LOG << "Applying template " << n << std::endl;
+  DEBUG_LOG << "Applying template " << n << "\n";
   for (int ty = 0; ty < 7; ++ty) {
     for (int tx = 0; tx < 11; ++tx) {
       set_tile(x + tx + 1, y + ty + 1, room_templates_[n][ty * 11 + tx]);
@@ -217,8 +218,7 @@ void Dungeon::draw_door_frame(Graphics& graphics, Tile tile, int x,
   }
 }
 
-void Dungeon::draw_overlay(Graphics& graphics, int hud_height, int xo,
-                           int yo) const {
+void Dungeon::draw_overlay(Graphics& graphics, int hud_height) const {
   wall_overlay_.draw(graphics, 0, hud_height);
   draw_door_frame(graphics, door_tiles_[0], 120, 96);
   draw_door_frame(graphics, door_tiles_[1], 120, 224);
@@ -262,7 +262,7 @@ int lerp(int a, int b, float t) {
 }  // namespace
 
 void Dungeon::place_room(int x, int y, int room, RoomType type) {
-  DEBUG_LOG << "Placing room at " << x << ", " << y << std::endl;
+  DEBUG_LOG << "Placing room at " << x << ", " << y << "\n";
   for (int ty = 0; ty < 7; ++ty) {
     for (int tx = 0; tx < 11; ++tx) {
       Cell& cell = cells_[ty + y + 1][tx + x + 1];
@@ -273,7 +273,8 @@ void Dungeon::place_room(int x, int y, int room, RoomType type) {
   tile_room(x, y, type);
   if (type != RoomType::Normal) return;
 
-  DEBUG_LOG << "Configuring room" << std::endl;
+  DEBUG_LOG << "Configuring room"
+            << "\n";
   float t = (room - 1) / 14.f;
   const int min_target = lerp(10, 100, t);
   const int max_target = lerp(25, 300, t);
@@ -295,13 +296,13 @@ void Dungeon::place_room(int x, int y, int room, RoomType type) {
       DEBUG_LOG << value << ", ";
       place_room_value(x, y, value);
     }
-    DEBUG_LOG << std::endl;
+    DEBUG_LOG << "\n";
     tiles_to_value -= values.size();
   }
   while (tiles_to_value > 0) {
     int value = random_in_range(target / 4, 3 * target / 4);
     place_room_value(x, y, value);
-    DEBUG_LOG << "  Extra " << value << std::endl;
+    DEBUG_LOG << "  Extra " << value << "\n";
     --tiles_to_value;
   }
 }
@@ -377,7 +378,7 @@ void Dungeon::clear_active_cells(int room) {
     for (int x = 0; x < width_; ++x) {
       auto& cell = cells_[y][x];
       if (cell.room == room && cell.active) {
-        DEBUG_LOG << "Clearing cell " << x << ", " << y << std::endl;
+        DEBUG_LOG << "Clearing cell " << x << ", " << y << "\n";
         cell.active = false;
         cell.value = 0;
       }
@@ -408,16 +409,19 @@ Dungeon::Result Dungeon::activate(int x, int y) {
   cell.active = true;
   room.add(cell.value);
   DEBUG_LOG << "Activated tile!  Room is now " << room.running_total << " of "
-            << room.target << std::endl;
+            << room.target << "\n";
   if (room.done()) {
-    DEBUG_LOG << "Clearing active cells." << std::endl;
+    DEBUG_LOG << "Clearing active cells."
+              << "\n";
     clear_active_cells(room.number);
     if (room.overloaded()) {
-      DEBUG_LOG << "Room overloaded, OUCH!" << std::endl;
+      DEBUG_LOG << "Room overloaded, OUCH!"
+                << "\n";
       room.clear();
       return Result::Overload;
     }
-    DEBUG_LOG << "ORB" << std::endl;
+    DEBUG_LOG << "ORB"
+              << "\n";
     unlock_doors(room.number);
     room.clear();
     return Result::Perfect;

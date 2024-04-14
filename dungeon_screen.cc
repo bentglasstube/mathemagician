@@ -66,7 +66,7 @@ void DungeonScreen::draw(Graphics& graphics) const {
   const int yo = camera_.yoffset();
 
   dungeon_.draw(graphics, kHudHeight, xo, yo);
-  dungeon_.draw_overlay(graphics, kHudHeight, xo, yo);
+  dungeon_.draw_overlay(graphics, kHudHeight);
   player_.draw(graphics, xo, yo);
 
   if (state_ == State::FadeIn || state_ == State::FadeOut) {

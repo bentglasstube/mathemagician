@@ -63,7 +63,7 @@ class Dungeon {
   Position find_tile(Tile tile) const;
 
   void draw(Graphics& graphics, int hud_height, int xo, int yo) const;
-  void draw_overlay(Graphics& graphics, int hud_height, int xo, int yo) const;
+  void draw_overlay(Graphics& graphics, int hud_height) const;
 
   bool walkable(int x, int y) const;
   bool box_walkable(const Rect& r) const;
