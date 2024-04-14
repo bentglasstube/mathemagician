@@ -3,6 +3,7 @@
 #include "audio.h"
 #include "backdrop.h"
 #include "camera.h"
+#include "config.h"
 #include "graphics.h"
 #include "hud.h"
 #include "input.h"
@@ -23,7 +24,7 @@ class DungeonScreen : public Screen {
  private:
   enum class State { FadeIn, Playing, Pause, FadeOut };
 
-  static constexpr int kHudHeight = 5 * 16;
+  static constexpr int kHudHeight = 5 * Config::kTileSize;
   static constexpr int kFadeTimer = 1000;
 
   Text text_;
