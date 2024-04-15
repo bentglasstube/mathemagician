@@ -16,10 +16,10 @@ void UI::draw_large_number(Graphics& graphics, const SpriteMap& sprites, int x,
 void UI::draw_digit_string(Graphics& graphics, const SpriteMap& sprites, int x,
                            int y, int number, int base) {
   const std::string digits = std::to_string(number);
-  int dx = x;
+  int dx = x + 1;
   for (const char& c : digits) {
     sprites.draw(graphics, base + c - '0', dx, y);
-    dx += Config::kHalfTile;
+    dx += Config::kHalfTile - 1;
   }
 }
 
