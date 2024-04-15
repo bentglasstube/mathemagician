@@ -290,7 +290,9 @@ void Dungeon::place_room(int x, int y, int room, RoomType type) {
   const int max_group_size = std::min(rows + 1, cols + 1);
 
   while (tiles_to_value > 2) {
-    auto values = divide(target, std::min(tiles_to_value - 1, max_group_size));
+    const int tiles = std::min(tiles_to_value - 1, max_group_size);
+    if (tiles * 90 < target) break;  // too few tiles left for this split
+    auto values = divide(target, tiles);
     assert(values.size() > 1);
     DEBUG_LOG << "  Set ";
     for (auto value : values) {
