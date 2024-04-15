@@ -19,7 +19,7 @@ void Player::stop() {
   if (state_ == State::Walking) state_ = State::Waiting;
 }
 
-bool Player::interact(Dungeon& dungeon) {
+bool Player::interact(Dungeon& dungeon, Audio& audio) {
   if (state_ == State::Dying) return true;
 
   auto p = dungeon.grid_coords(x_, y_);
@@ -42,6 +42,7 @@ bool Player::interact(Dungeon& dungeon) {
   if (cell.tile == Dungeon::Tile::DoorClosed) {
     if (orbs_ > 0) {
       dungeon.open_door(p.x, p.y);
+      audio.play_sample("unlock.wav");
       --orbs_;
       return true;
     }
@@ -49,14 +50,21 @@ bool Player::interact(Dungeon& dungeon) {
   return false;
 }
 
-void Player::activate(Dungeon& dungeon) {
+void Player::focus() {
+  if (state_ == State::Dying) return;
+  if (state_ == State::Attacking) return;
+  state_transition(State::Holding);
+}
+
+void Player::activate(Dungeon& dungeon, Audio& audio) {
   if (state_ == State::Dying) return;
   if (state_ == State::Attacking) return;
 
   auto p = dungeon.grid_coords(x_, y_);
-  auto result = dungeon.activate(p.x, p.y);
+  auto result = dungeon.activate(p.x, p.y, audio);
   switch (result) {
     case Dungeon::Result::Overload:
+      audio.play_sample("hit.wav");
       hurt(1);
       break;
     case Dungeon::Result::Perfect:
@@ -94,7 +102,7 @@ std::pair<double, double> grid_walk(double delta, double minor, int grid) {
 
 void Player::hit(Entity& source) { Entity::hit(source); }
 
-void Player::update(Dungeon& dungeon, unsigned int elapsed) {
+void Player::update(Dungeon& dungeon, unsigned int elapsed, Audio& audio) {
   Entity::update_generic(dungeon, elapsed);
 
   if (attack_cooldown_ > 0) attack_cooldown_ -= elapsed;
@@ -134,6 +142,12 @@ void Player::update(Dungeon& dungeon, unsigned int elapsed) {
     timer_ += elapsed;
     facing_ = static_cast<Direction>((timer_ / kSpinTime) % 4);
     dead_ = timer_ > kDeathTimer;
+  } else if (state_ == State::Holding) {
+    timer_ += elapsed;
+    if (timer_ > kFocusTime) {
+      activate(dungeon, audio);
+      state_transition(State::Waiting);
+    }
   }
 }
 
@@ -154,10 +168,9 @@ void Player::draw(Graphics& graphics, int xo, int yo) const {
 }
 
 int Player::sprite_number() const {
+  if (state_ == State::Holding) return 15;
+
   int d = 0;
-
-  if (state_ == State::Dying && timer_ > kDeathTimer) return 15;
-
   switch (facing_) {
     case Direction::North:
       d = 0;

@@ -69,7 +69,7 @@ class Dungeon {
   bool box_walkable(const Rect& r) const;
 
   void open_door(int x, int y);
-  Result activate(int x, int y);
+  Result activate(int x, int y, Audio& audio);
 
   Room& get_room(int x, int y);
   const Room& get_room(int x, int y) const;

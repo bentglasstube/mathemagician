@@ -412,7 +412,7 @@ void Dungeon::unlock_doors(int room) {
   }
 }
 
-Dungeon::Result Dungeon::activate(int x, int y) {
+Dungeon::Result Dungeon::activate(int x, int y, Audio& audio) {
   if (x < 0 || x >= width_) return Result::None;
   if (y < 0 || y >= height_) return Result::None;
   auto& cell = cells_[y][x];
@@ -420,6 +420,7 @@ Dungeon::Result Dungeon::activate(int x, int y) {
   auto& room = get_room(x, y);
   cell.active = true;
   room.add(cell.value);
+  audio.play_sample("activate.wav");
   DEBUG_LOG << "Activated tile!  Room is now " << room.running_total << " of "
             << room.target << "\n";
   if (room.done()) {
@@ -434,6 +435,7 @@ Dungeon::Result Dungeon::activate(int x, int y) {
     }
     DEBUG_LOG << "ORB"
               << "\n";
+    audio.play_sample("orb.wav");
     unlock_doors(room.number);
     room.clear();
     return Result::Perfect;

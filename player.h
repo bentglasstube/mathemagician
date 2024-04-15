@@ -13,12 +13,12 @@ class Player : public Entity {
 
   void move(Direction direction);
   void stop();
-  bool interact(Dungeon& dungeon);
-  void activate(Dungeon& dungeon);
+  bool interact(Dungeon& dungeon, Audio& audio);
+  void focus();
   void attack();
 
   void hit(Entity& source) override;
-  void update(Dungeon& dungeon, unsigned int elapsed) override;
+  void update(Dungeon& dungeon, unsigned int elapsed, Audio& audio) override;
   void draw(Graphics& graphics, int xo, int yo) const override;
 
   Rect collision_box() const override;
@@ -34,12 +34,13 @@ class Player : public Entity {
   static constexpr int kDeathTimer = 2500;
   static constexpr int kAnimationTime = 250;
   static constexpr int kSpinTime = kAnimationTime / 2;
+  static constexpr int kFocusTime = 500;
 
   SpriteMap weapons_;
   Text text_;
   int attack_cooldown_, orbs_;
 
   int sprite_number() const override;
-
   void draw_weapon(Graphics& graphics, int xo, int yo) const;
+  void activate(Dungeon& dungeon, Audio& audio);
 };

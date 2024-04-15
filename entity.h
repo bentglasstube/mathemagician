@@ -23,7 +23,7 @@ class Entity {
   void set_position(double x, double y);
 
   virtual void ai(const Dungeon& dungeon, const Entity& target);
-  virtual void update(Dungeon& dungeon, unsigned int elapsed);
+  virtual void update(Dungeon& dungeon, unsigned int elapsed, Audio&);
   virtual void draw(Graphics& graphics, int xo, int yo) const;
   virtual bool dead() const;
   virtual bool alive() const;

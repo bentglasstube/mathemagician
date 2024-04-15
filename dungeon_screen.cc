@@ -14,7 +14,8 @@ DungeonScreen::DungeonScreen()
   player_.set_position(512 * 16 - 8, 1023 * 16);
 }
 
-bool DungeonScreen::update(const Input& input, Audio&, unsigned int elapsed) {
+bool DungeonScreen::update(const Input& input, Audio& audio,
+                           unsigned int elapsed) {
   if (state_ == State::FadeIn) {
     timer_ += elapsed;
     if (timer_ > kFadeTimer) {
@@ -45,17 +46,18 @@ bool DungeonScreen::update(const Input& input, Audio&, unsigned int elapsed) {
     }
 
     if (input.key_pressed(Input::Button::A)) {
-      if (!player_.interact(dungeon_)) player_.attack();
+      if (!player_.interact(dungeon_, audio)) player_.attack();
     }
 
     if (input.key_pressed(Input::Button::B)) {
-      player_.activate(dungeon_);
+      audio.play_sample("focus.wav");
+      player_.focus();
     }
 
     if (player_.dead()) state_ = State::FadeOut;
   }
 
-  player_.update(dungeon_, elapsed);
+  player_.update(dungeon_, elapsed, audio);
   camera_.update(player_);
 
   return true;

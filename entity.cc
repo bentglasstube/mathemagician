@@ -72,7 +72,7 @@ void Entity::update_generic(const Dungeon& dungeon, unsigned int elapsed) {
   }
 }
 
-void Entity::update(Dungeon& dungeon, unsigned int elapsed) {
+void Entity::update(Dungeon& dungeon, unsigned int elapsed, Audio&) {
   update_generic(dungeon, elapsed);
   timer_ += elapsed;
   if (state_ == State::Dying) {
