@@ -86,5 +86,3 @@ void DungeonScreen::draw(Graphics& graphics) const {
 }
 
 Screen* DungeonScreen::next_screen() const { return new TitleScreen(); }
-
-std::string DungeonScreen::get_music_track() const { return ""; }
